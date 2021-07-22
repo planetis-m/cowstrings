@@ -125,9 +125,9 @@ proc initStringOfCap*(space: int): String =
     result = String(len: 0, p: nil)
   else:
     when compileOption("threads"):
-      let p = cast[ptr StrPayload](allocShared(contentSize(space)))
+      let p = cast[ptr StrPayload](allocShared0(contentSize(space)))
     else:
-      let p = cast[ptr StrPayload](alloc(contentSize(space)))
+      let p = cast[ptr StrPayload](alloc0(contentSize(space)))
     p.cap = space
     p.counter = 0
     result = String(len: 0, p: p)
