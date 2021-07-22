@@ -40,9 +40,9 @@ proc deepCopy*(y: String): String =
     result = String(len: 0, p: nil)
   else:
     when compileOption("threads"):
-      let p = cast[ptr StrPayload](allocShared0(contentSize(y.len)))
+      let p = cast[ptr StrPayload](allocShared(contentSize(y.len)))
     else:
-      let p = cast[ptr StrPayload](alloc0(contentSize(y.len)))
+      let p = cast[ptr StrPayload](alloc(contentSize(y.len)))
     p.cap = y.len
     p.counter = 0
     if y.len > 0:
@@ -99,9 +99,9 @@ proc cstrToStr(str: cstring, len: int): String =
     result = String(len: 0, p: nil)
   else:
     when compileOption("threads"):
-      let p = cast[ptr StrPayload](allocShared0(contentSize(len)))
+      let p = cast[ptr StrPayload](allocShared(contentSize(len)))
     else:
-      let p = cast[ptr StrPayload](alloc0(contentSize(len)))
+      let p = cast[ptr StrPayload](alloc(contentSize(len)))
     p.cap = len
     p.counter = 0
     if len > 0:
@@ -125,9 +125,9 @@ proc initStringOfCap*(space: int): String =
     result = String(len: 0, p: nil)
   else:
     when compileOption("threads"):
-      let p = cast[ptr StrPayload](allocShared0(contentSize(space)))
+      let p = cast[ptr StrPayload](allocShared(contentSize(space)))
     else:
-      let p = cast[ptr StrPayload](alloc0(contentSize(space)))
+      let p = cast[ptr StrPayload](alloc(contentSize(space)))
     p.cap = space
     p.counter = 0
     result = String(len: 0, p: p)
