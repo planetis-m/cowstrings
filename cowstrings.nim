@@ -36,17 +36,19 @@ proc `=copy`*(a: var String, b: String) =
   a.len = b.len
 
 proc deepCopy*(y: String): String =
-  result.len = y.len
-  if y.p != nil:
+  if y.len <= 0:
+    result = String(len: 0, p: nil)
+  else:
     when compileOption("threads"):
-      result.p = cast[ptr StrPayload](allocShared0(contentSize(result.len)))
+      let p = cast[ptr StrPayload](allocShared0(contentSize(y.len)))
     else:
-      result.p = cast[ptr StrPayload](alloc0(contentSize(result.len)))
-    result.p.cap = result.len
-    result.p.counter = 0
-    if result.len > 0:
+      let p = cast[ptr StrPayload](alloc0(contentSize(y.len)))
+    p.cap = y.len
+    p.counter = 0
+    if y.len > 0:
       # also copy the \0 terminator:
-      copyMem(unsafeAddr result.p.data[0], unsafeAddr y.p.data[0], result.len+1)
+      copyMem(unsafeAddr p.data[0], unsafeAddr y.p.data[0], y.len+1)
+    result = String(len: y.len, p: p)
 
 proc resize(old: int): int {.inline.} =
   if old <= 0: result = 4
