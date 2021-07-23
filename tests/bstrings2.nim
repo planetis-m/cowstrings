@@ -1,7 +1,7 @@
-import sync/spsc_queue
+import sync/spsc_queue, std/isolation
 
 const
-  numIters = 200
+  numIters = 200000
 
 var
   pong: Thread[void]
@@ -9,7 +9,8 @@ var
   q2: SpscQueue[string]
 
 template pushLoop(tx, data: typed, body: untyped): untyped =
-  while not tx.tryPush(data):
+  var p = isolate(data)
+  while not tx.tryPush(p):
     body
 
 template popLoop(rx, data: typed, body: untyped): untyped =

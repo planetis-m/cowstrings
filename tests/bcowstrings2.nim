@@ -1,7 +1,7 @@
-import cowstrings, sync/spsc_queue
+import cowstrings, sync/spsc_queue, std/isolation
 
 const
-  numIters = 200
+  numIters = 200000
 
 var
   pong: Thread[void]
@@ -9,7 +9,8 @@ var
   q2: SpscQueue[String]
 
 template pushLoop(tx, data: typed, body: untyped): untyped =
-  while not tx.tryPush(data):
+  var p = isolate(data)
+  while not tx.tryPush(p):
     body
 
 template popLoop(rx, data: typed, body: untyped): untyped =
@@ -20,8 +21,7 @@ proc pongFn {.thread.} =
   while true:
     var n: String
     popLoop(q1, n): discard
-    var p = isolate(n)
-    pushLoop(q2, p): discard
+    pushLoop(q2, n): discard
     #sleep 20
     if n[0] == '0': break
     assert n == toStr("1")
@@ -31,14 +31,12 @@ proc pingPong =
   q2 = newSpscQueue[String](2000)
   createThread(pong, pongFn)
   for i in 1..numIters:
-    var p = isolate(toStr("1"))
-    pushLoop(q1, p): discard
+    pushLoop(q1, toStr("1")): discard
     var n: String
     #sleep 10
     popLoop(q2, n): discard
     assert n == toStr("1")
-  var p = isolate(toStr("0"))
-  pushLoop(q1, p): discard
+  pushLoop(q1, toStr("0")): discard
   var n: String
   popLoop(q2, n): discard
   assert n == toStr("0")

@@ -45,9 +45,8 @@ proc deepCopy*(y: String): String =
       let p = cast[ptr StrPayload](alloc(contentSize(y.len)))
     p.cap = y.len
     p.counter = 0
-    if y.len > 0:
-      # also copy the \0 terminator:
-      copyMem(unsafeAddr p.data[0], unsafeAddr y.p.data[0], y.len+1)
+    # also copy the \0 terminator:
+    copyMem(unsafeAddr p.data[0], unsafeAddr y.p.data[0], y.len+1)
     result = String(len: y.len, p: p)
 
 proc resize(old: int): int {.inline.} =
@@ -104,8 +103,7 @@ proc cstrToStr(str: cstring, len: int): String =
       let p = cast[ptr StrPayload](alloc(contentSize(len)))
     p.cap = len
     p.counter = 0
-    if len > 0:
-      copyMem(unsafeAddr p.data[0], str, len+1)
+    copyMem(unsafeAddr p.data[0], str, len+1)
     result = String(len: len, p: p)
 
 proc toStr*(str: cstring): String {.inline.} =
@@ -183,7 +181,7 @@ proc cmpStrings*(a, b: String): int =
 proc `<=`*(a, b: String): bool {.inline.} = cmpStrings(a, b) <= 0
 proc `<`*(a, b: String): bool {.inline.} = cmpStrings(a, b) < 0
 
-proc raiseIndexDefect() {.noinline.} =
+proc raiseIndexDefect() {.noinline, noreturn.} =
   raise newException(IndexDefect, "index out of bounds")
 
 template checkBounds(cond: untyped) =
