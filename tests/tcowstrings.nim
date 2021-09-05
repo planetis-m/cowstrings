@@ -24,5 +24,11 @@ proc main =
     #b.add 'r'
     let c = extract a
     echo c.toCStr
+  block:
+    let a = cstring"World".toStr
+    var b = a
+    prepareStrMutation(b)
+    b[0] = 'P'
+    assert a == cstring"World".toStr
 
 main()

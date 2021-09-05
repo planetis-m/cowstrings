@@ -1,4 +1,4 @@
-import sync/spsc_queue, std/isolation
+import threading/spsc_queue, std/isolation
 
 const
   numIters = 200000

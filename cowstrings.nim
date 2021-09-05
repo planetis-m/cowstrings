@@ -10,7 +10,7 @@ type
 
   String* = object
     len: int
-    p: ptr StrPayload ## can be nil if len == 0.
+    p: ptr StrPayload # can be nil if len == 0.
 
 template contentSize(cap): int = cap + 1 + sizeof(StrPayloadBase)
 
@@ -59,7 +59,6 @@ proc prepareAdd(s: var String; addLen: int) =
   # copy the data iff there is more than a reference or its a literal
   if s.p == nil or s.p.counter > 0:
     let oldP = s.p # can be nil
-    if s.p != nil: dec s.p.counter
     # can't mutate a literal, so we need a fresh copy here:
     when compileOption("threads"):
       s.p = cast[ptr StrPayload](allocShared0(contentSize(newLen)))
@@ -68,6 +67,7 @@ proc prepareAdd(s: var String; addLen: int) =
     s.p.cap = newLen
     s.p.counter = 0
     if s.len > 0:
+      dec oldP.counter
       # we are about to append, so there is no need to copy the \0 terminator:
       copyMem(unsafeAddr s.p.data[0], unsafeAddr oldP.data[0], min(s.len, newLen))
   else:
@@ -154,7 +154,7 @@ proc setLen*(s: var String, newLen: int) =
 proc len*(s: String): int {.inline.} = s.len
 
 proc isolate*(value: sink String): Isolated[String] {.nodestroy.} =
-  # Ensure unique
+  # Ensure uniqueness
   if value.p == nil or value.p.counter == 0:
     result = unsafeIsolate value
   else:
@@ -181,19 +181,35 @@ proc cmpStrings*(a, b: String): int =
 proc `<=`*(a, b: String): bool {.inline.} = cmpStrings(a, b) <= 0
 proc `<`*(a, b: String): bool {.inline.} = cmpStrings(a, b) < 0
 
-proc raiseIndexDefect() {.noinline, noreturn.} =
-  raise newException(IndexDefect, "index out of bounds")
+proc prepareStrMutation*(s: var String) {.inline.} =
+  if s.p != nil and s.p.counter > 0:
+    let oldP = s.p
+    # can't mutate a literal, so we need a fresh copy here:
+    when compileOption("threads"):
+      s.p = cast[ptr StrPayload](allocShared0(contentSize(s.len)))
+    else:
+      s.p = cast[ptr StrPayload](alloc0(contentSize(s.len)))
+    s.p.cap = s.len
+    dec oldP.counter
+    copyMem(unsafeAddr s.p.data[0], unsafeAddr oldP.data[0], s.len+1)
 
-template checkBounds(cond: untyped) =
+proc raiseIndexDefect(i, n: int) {.noinline, noreturn.} =
+  raise newException(IndexDefect, "index " & $i & " not in 0 .. " & $n)
+
+template checkBounds(i, n) =
   when compileOption("boundChecks"):
     {.line.}:
-      if not cond:
-        raiseIndexDefect()
+      if i.uint >= n.uint:
+        raiseIndexDefect(i, n-1)
 
 proc `[]`*(x: String; i: int): char {.inline.} =
-  checkBounds(i >= 0 and i <= x.len)
+  checkBounds(i, x.len)
   x.p.data[i]
 
-proc `[]=`*(x: String; i: int; val: char) {.inline.} =
-  checkBounds(i >= 0 and i <= x.len)
+proc `[]`*(x: var String; i: int): var char {.inline.} =
+  checkBounds(i, x.len)
+  x.p.data[i]
+
+proc `[]=`*(x: var String; i: int; val: char) {.inline.} =
+  checkBounds(i, x.len)
   x.p.data[i] = val
