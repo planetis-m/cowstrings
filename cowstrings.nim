@@ -46,7 +46,7 @@ proc deepCopy*(y: String): String =
     p.cap = y.len
     p.counter = 0
     # also copy the \0 terminator:
-    copyMem(unsafeAddr p.data[0], unsafeAddr y.p.data[0], y.len+1)
+    copyMem(addr p.data[0], addr y.p.data[0], y.len+1)
     result = String(len: y.len, p: p)
 
 proc resize(old: int): int {.inline.} =
@@ -69,7 +69,7 @@ proc prepareAdd(s: var String; addLen: int) =
     if s.len > 0:
       dec oldP.counter
       # we are about to append, so there is no need to copy the \0 terminator:
-      copyMem(unsafeAddr s.p.data[0], unsafeAddr oldP.data[0], min(s.len, newLen))
+      copyMem(addr s.p.data[0], addr oldP.data[0], min(s.len, newLen))
   else:
     let oldCap = s.p.cap
     if newLen > oldCap:
@@ -90,7 +90,7 @@ proc add*(dest: var String; src: String) {.inline.} =
   if src.len > 0:
     prepareAdd(dest, src.len)
     # also copy the \0 terminator:
-    copyMem(unsafeAddr dest.p.data[dest.len], unsafeAddr src.p.data[0], src.len+1)
+    copyMem(addr dest.p.data[dest.len], addr src.p.data[0], src.len+1)
     inc dest.len, src.len
 
 proc cstrToStr(str: cstring, len: int): String =
@@ -103,7 +103,7 @@ proc cstrToStr(str: cstring, len: int): String =
       let p = cast[ptr StrPayload](alloc(contentSize(len)))
     p.cap = len
     p.counter = 0
-    copyMem(unsafeAddr p.data[0], str, len+1)
+    copyMem(addr p.data[0], str, len+1)
     result = String(len: len, p: p)
 
 proc toStr*(str: cstring): String {.inline.} =
@@ -115,7 +115,7 @@ proc toStr*(str: string): String {.inline.} =
 
 proc toCStr*(s: String): cstring {.inline.} =
   if s.len == 0: result = cstring""
-  else: result = cstring(unsafeAddr s.p.data)
+  else: result = cstring(addr s.p.data)
 
 proc initStringOfCap*(space: Natural): String =
   # this is also 'system.newStringOfCap'.
@@ -165,14 +165,14 @@ proc eqStrings*(a, b: String): bool =
   result = false
   if a.len == b.len:
     if a.len == 0: result = true
-    else: result = equalMem(unsafeAddr a.p.data[0], unsafeAddr b.p.data[0], a.len)
+    else: result = equalMem(addr a.p.data[0], addr b.p.data[0], a.len)
 
 proc `==`*(a, b: String): bool {.inline.} = eqStrings(a, b)
 
 proc cmpStrings*(a, b: String): int =
   let minLen = min(a.len, b.len)
   if minLen > 0:
-    result = cmpMem(unsafeAddr a.p.data[0], unsafeAddr b.p.data[0], minLen)
+    result = cmpMem(addr a.p.data[0], addr b.p.data[0], minLen)
     if result == 0:
       result = a.len - b.len
   else:
@@ -191,7 +191,7 @@ proc prepareStrMutation*(s: var String) {.inline.} =
       s.p = cast[ptr StrPayload](alloc0(contentSize(s.len)))
     s.p.cap = s.len
     dec oldP.counter
-    copyMem(unsafeAddr s.p.data[0], unsafeAddr oldP.data[0], s.len+1)
+    copyMem(addr s.p.data[0], addr oldP.data[0], s.len+1)
 
 proc raiseIndexDefect(i, n: int) {.noinline, noreturn.} =
   raise newException(IndexDefect, "index " & $i & " not in 0 .. " & $n)
