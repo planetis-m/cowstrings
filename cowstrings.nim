@@ -117,7 +117,7 @@ proc toCStr*(s: String): cstring {.inline.} =
   if s.len == 0: result = cstring""
   else: result = cstring(unsafeAddr s.p.data)
 
-proc initStringOfCap*(space: int): String =
+proc initStringOfCap*(space: Natural): String =
   # this is also 'system.newStringOfCap'.
   if space <= 0:
     result = String(len: 0, p: nil)
@@ -130,7 +130,7 @@ proc initStringOfCap*(space: int): String =
     p.counter = 0
     result = String(len: 0, p: p)
 
-proc initString*(len: int): String =
+proc initString*(len: Natural): String =
   if len <= 0:
     result = String(len: 0, p: nil)
   else:
@@ -142,7 +142,7 @@ proc initString*(len: int): String =
     p.counter = 0
     result = String(len: len, p: p)
 
-proc setLen*(s: var String, newLen: int) =
+proc setLen*(s: var String, newLen: Natural) =
   if newLen == 0:
     discard "do not free the buffer here, pattern 's.setLen 0' is common for avoiding allocations"
   else:
@@ -199,7 +199,7 @@ proc raiseIndexDefect(i, n: int) {.noinline, noreturn.} =
 template checkBounds(i, n) =
   when compileOption("boundChecks"):
     {.line.}:
-      if i.uint >= n.uint:
+      if i < 0 or i >= n:
         raiseIndexDefect(i, n-1)
 
 proc `[]`*(x: String; i: int): char {.inline.} =
