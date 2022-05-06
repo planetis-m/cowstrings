@@ -213,3 +213,19 @@ proc `[]`*(x: var String; i: int): var char {.inline.} =
 proc `[]=`*(x: var String; i: int; val: char) {.inline.} =
   checkBounds(i, x.len)
   x.p.data[i] = val
+
+iterator items*(a: String): char {.inline.} =
+  var i = 0
+  let L = a.len
+  while i < L:
+    yield a[i]
+    inc(i)
+    assert(a.len == L, "the length of the string changed while iterating over it")
+
+iterator mitems*(a: var String): var char {.inline.} =
+  var i = 0
+  let L = a.len
+  while i < L:
+    yield a[i]
+    inc(i)
+    assert(a.len == L, "the length of the string changed while iterating over it")
