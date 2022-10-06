@@ -8,13 +8,13 @@ proc main =
     var b = a
     b.add a
     b.add 'w'
-    echo a.toCStr # prevent sink
-    echo b.toCStr
+    assert a.toCStr == cstring"h" # prevent sink
+    assert b.toCStr == cstring"hhw"
   block:
     var a: String
     a.add 'h'
     a.add 'e'
-    echo a.toCStr
+    assert a == cstring"he".toStr
   block:
     var a: Isolated[String]
     var b: String
@@ -23,7 +23,7 @@ proc main =
     a = isolate b
     #b.add 'r'
     let c = extract a
-    echo c.toCStr
+    assert c == cstring"wo".toStr
   block:
     let a = cstring"World".toStr
     var b = a
