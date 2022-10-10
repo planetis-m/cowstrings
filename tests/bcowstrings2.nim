@@ -1,7 +1,7 @@
-import cowstrings, threading/spsc_queue, std/isolation
+import cowstrings, sync/spsc_queue, std/isolation
 
 const
-  numIters = 200000
+  numIters = 100000
 
 var
   pong: Thread[void]
