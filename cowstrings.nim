@@ -153,7 +153,7 @@ proc setLen*(s: var String, newLen: Natural) =
 
 proc len*(s: String): int {.inline.} = s.len
 
-proc isolate*(value: sink String): Isolated[String] {.nodestroy.} =
+proc isolate*(value: sink String): Isolated[String] =
   # Ensure uniqueness
   if value.p == nil or value.p.counter == 0:
     result = unsafeIsolate value
