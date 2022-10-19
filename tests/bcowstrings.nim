@@ -22,8 +22,8 @@ proc consume(rx: SpscReceiver[String]) =
 
 proc produce(tx: SpscSender[String]) =
   for i in 0 ..< numIters:
-    var p = isolate(toStr($(i + seed)))
-    sendLoop(tx, p): cpuRelax()
+    # var p = isolate(toStr($(i + seed)))
+    sendLoop(tx, toStr($(i + seed))): cpuRelax()
     #echo " >> sent ", $(i + seed)
 
 proc testSpScRing =
