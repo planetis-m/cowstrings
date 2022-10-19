@@ -30,8 +30,7 @@ proc `=destroy`*(x: var String) =
 proc `=copy`*(a: var String, b: String) =
   if b.p != nil:
     inc b.p.counter
-  if a.p != nil:
-    `=destroy`(a)
+  `=destroy`(a)
   a.p = b.p
   a.len = b.len
 
