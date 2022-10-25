@@ -113,7 +113,7 @@ proc toStr*(str: string): String {.inline.} =
   cstrToStr(str.cstring, str.len)
 
 proc toCStr*(s: String): cstring {.inline.} =
-  if s.len == 0: result = cstring""
+  if s.len == 0: result = cstring"" # potential UB
   else: result = cstring(addr s.p.data)
 
 proc initStringOfCap*(space: Natural): String =
@@ -151,6 +151,8 @@ proc setLen*(s: var String, newLen: Natural) =
   s.len = newLen
 
 proc len*(s: String): int {.inline.} = s.len
+proc high*(s: String): int {.inline.} = len(s)-1
+proc low*(s: String): int {.inline.} = 0
 
 proc isolate*(value: sink String): Isolated[String] =
   # Ensure uniqueness
@@ -228,3 +230,9 @@ iterator mitems*(a: var String): var char {.inline.} =
     yield a[i]
     inc(i)
     assert(a.len == L, "the length of the string changed while iterating over it")
+
+template toOpenArray*(s: String; first, last: int): untyped =
+  toOpenArray(toCStr(s), first, last)
+
+template toOpenArray*(s: String): untyped =
+  toOpenArray(toCStr(s), 0, s.high)
