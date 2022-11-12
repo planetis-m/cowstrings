@@ -1,4 +1,4 @@
-import sync/spsc, cowstrings
+import sync/spsc, cowstrings, std/assertions
 
 const
   seed = 99

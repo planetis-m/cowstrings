@@ -1,4 +1,6 @@
 import std/isolation
+when defined(nimPreviewSlimSystem):
+  import std/assertions
 
 type
   StrPayloadBase = object
@@ -151,7 +153,7 @@ proc setLen*(s: var String, newLen: Natural) =
   s.len = newLen
 
 proc len*(s: String): int {.inline.} = s.len
-proc high*(s: String): int {.inline.} = len(s)-1
+proc high*(s: String): int {.inline.} = s.len-1
 proc low*(s: String): int {.inline.} = 0
 
 proc isolate*(value: sink String): Isolated[String] =

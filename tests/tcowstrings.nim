@@ -1,5 +1,5 @@
 import cowstrings
-import std/isolation
+import std/[isolation, assertions]
 
 proc main =
   block:

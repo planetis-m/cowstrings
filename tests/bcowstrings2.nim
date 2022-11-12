@@ -1,4 +1,4 @@
-import cowstrings, sync/spsc_queue, std/isolation
+import cowstrings, sync/spsc_queue, std/[isolation, assertions]
 
 const
   numIters = 100000
