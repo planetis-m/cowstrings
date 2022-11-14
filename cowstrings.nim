@@ -115,8 +115,8 @@ proc toStr*(str: string): String {.inline.} =
   cstrToStr(str.cstring, str.len)
 
 proc toCStr*(s: String): cstring {.inline.} =
-  if s.len == 0: result = cstring"" # potential UB
-  else: result = cstring(addr s.p.data)
+  if s.len == 0: result = cstring(nil) # potential UB
+  else: result = cast[cstring](addr s.p.data)
 
 proc initStringOfCap*(space: Natural): String =
   # this is also 'system.newStringOfCap'.
