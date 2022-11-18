@@ -11,16 +11,15 @@ proc main =
     assert a.toCStr == cstring"h" # prevent sink
     assert b.toCStr == cstring"hhw"
   block:
-    var a: String
+    var a: String = toStr""
     a.add 'h'
     a.add 'e'
     assert a == cstring"he".toStr
   block:
-    var a: Isolated[String]
-    var b: String
+    var b: String = toStr""
     b.add 'w'
     b.add 'o'
-    a = isolate b
+    var a = isolate b
     #b.add 'r'
     let c = extract a
     assert c == cstring"wo".toStr
