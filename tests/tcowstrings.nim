@@ -26,7 +26,7 @@ proc main =
   block:
     let a = cstring"World".toStr
     var b = a
-    prepareStrMutation(b)
+    prepareMutation(b)
     b[0] = 'P'
     assert a == cstring"World".toStr
 

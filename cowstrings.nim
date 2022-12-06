@@ -214,7 +214,7 @@ proc `[]`*(x: var String; i: int): var char {.inline.} =
   x.p.data[i]
 
 proc `[]=`*(x: var String; i: int; val: char) {.inline.} =
-  assert s.p == nil or s.p.counter == 0, "the string is not unique, call prepareMutation beforehand"
+  assert x.p == nil or x.p.counter == 0, "the string is not unique, call prepareMutation beforehand"
   checkBounds(i, x.len)
   x.p.data[i] = val
 
