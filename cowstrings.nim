@@ -209,12 +209,12 @@ proc `[]`*(x: String; i: int): char {.inline.} =
   checkBounds(i, x.len)
   x.p.data[i]
 
-# proc `[]`*(x: var String; i: int): var char {.inline.} =
-#   checkBounds(i, x.len)
-#   x.p.data[i]
+proc `[]`*(x: var String; i: int): var char {.inline.} =
+  checkBounds(i, x.len)
+  x.p.data[i]
 
 proc `[]=`*(x: var String; i: int; val: char) {.inline.} =
-  prepareMutation(x)
+  assert s.p == nil or s.p.counter == 0, "the string is not unique, call prepareMutation beforehand"
   checkBounds(i, x.len)
   x.p.data[i] = val
 
