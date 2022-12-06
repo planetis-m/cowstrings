@@ -184,7 +184,7 @@ proc cmpStrings*(a, b: String): int =
 proc `<=`*(a, b: String): bool {.inline.} = cmpStrings(a, b) <= 0
 proc `<`*(a, b: String): bool {.inline.} = cmpStrings(a, b) < 0
 
-proc prepareStrMutation*(s: var String) {.inline.} =
+proc prepareMutation*(s: var String) {.inline.} =
   if s.p != nil and s.p.counter > 0:
     let oldP = s.p
     # can't mutate a literal, so we need a fresh copy here:
@@ -209,11 +209,12 @@ proc `[]`*(x: String; i: int): char {.inline.} =
   checkBounds(i, x.len)
   x.p.data[i]
 
-proc `[]`*(x: var String; i: int): var char {.inline.} =
-  checkBounds(i, x.len)
-  x.p.data[i]
+# proc `[]`*(x: var String; i: int): var char {.inline.} =
+#   checkBounds(i, x.len)
+#   x.p.data[i]
 
 proc `[]=`*(x: var String; i: int; val: char) {.inline.} =
+  prepareMutation(x)
   checkBounds(i, x.len)
   x.p.data[i] = val
 
