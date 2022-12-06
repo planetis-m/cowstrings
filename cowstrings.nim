@@ -214,8 +214,8 @@ proc `[]`*(x: var String; i: int): var char {.inline.} =
   x.p.data[i]
 
 proc `[]=`*(x: var String; i: int; val: char) {.inline.} =
-  assert x.p == nil or x.p.counter == 0, "the string is not unique, call prepareMutation beforehand"
   checkBounds(i, x.len)
+  assert x.p.counter == 0, "the string is not unique, call prepareMutation beforehand"
   x.p.data[i] = val
 
 iterator items*(a: String): char {.inline.} =
