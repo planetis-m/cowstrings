@@ -29,12 +29,18 @@ proc `=destroy`*(x: var String) =
     else:
       dec x.p.counter
 
-proc `=copy`*(a: var String, b: String) =
+template dups(a, b) =
   if b.p != nil:
     inc b.p.counter
-  `=destroy`(a)
   a.p = b.p
   a.len = b.len
+
+proc `=dup`*(b: String): String =
+  dups(result, b)
+
+proc `=copy`*(a: var String, b: String) =
+  `=destroy`(a)
+  dups(a, b)
 
 proc deepCopy*(y: String): String =
   if y.len <= 0:
@@ -115,7 +121,7 @@ proc toStr*(str: string): String {.inline.} =
   cstrToStr(str.cstring, str.len)
 
 proc toCStr*(s: String): cstring {.inline.} =
-  if s.len == 0: result = cstring(nil) # potential UB
+  if s.len == 0: result = cstring""
   else: result = cast[cstring](addr s.p.data)
 
 proc initStringOfCap*(space: Natural): String =
