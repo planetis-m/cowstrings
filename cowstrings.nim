@@ -195,10 +195,11 @@ proc prepareMutation*(s: var String) {.inline.} =
     let oldP = s.p
     # can't mutate a literal, so we need a fresh copy here:
     when compileOption("threads"):
-      s.p = cast[ptr StrPayload](allocShared0(contentSize(s.len)))
+      s.p = cast[ptr StrPayload](allocShared(contentSize(s.len)))
     else:
-      s.p = cast[ptr StrPayload](alloc0(contentSize(s.len)))
+      s.p = cast[ptr StrPayload](alloc(contentSize(s.len)))
     s.p.cap = s.len
+    s.p.counter = 0
     dec oldP.counter
     copyMem(addr s.p.data[0], addr oldP.data[0], s.len+1)
 
