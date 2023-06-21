@@ -22,7 +22,7 @@ template frees(s) =
   else:
     dealloc(s.p)
 
-proc `=destroy`*(x: var String) =
+proc `=destroy`*(x: String) =
   if x.p != nil:
     if x.p.counter == 0:
       frees(x)
