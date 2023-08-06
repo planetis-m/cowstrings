@@ -29,6 +29,9 @@ proc `=destroy`*(x: String) =
     else:
       dec x.p.counter
 
+proc `=wasMoved`*(x: var String) =
+  x.p = nil
+
 template dups(a, b) =
   if b.p != nil:
     inc b.p.counter
