@@ -228,6 +228,19 @@ proc `[]=`*(x: var String; i: int; val: char) {.inline.} =
   assert x.p.counter == 0, "the string is not unique, call prepareMutation beforehand"
   x.p.data[i] = val
 
+proc `[]`*(x: String; i: BackwardsIndex): char {.inline.} =
+  checkBounds(x.len - i.int, x.len)
+  x.p.data[x.len - i.int]
+
+proc `[]`*(x: var String; i: BackwardsIndex): var char {.inline.} =
+  checkBounds(x.len - i.int, x.len)
+  x.p.data[x.len - i.int]
+
+proc `[]=`*(x: var String; i: BackwardsIndex; val: char) {.inline.} =
+  checkBounds(x.len - i.int, x.len)
+  assert x.p.counter == 0, "the string is not unique, call prepareMutation beforehand"
+  x.p.data[x.len - i.int] = val
+
 iterator items*(a: String): char {.inline.} =
   var i = 0
   let L = a.len
