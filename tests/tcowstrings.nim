@@ -52,5 +52,8 @@ proc main =
       let expected = data[0..<strLen]
       assert str.toCStr == expected.cstring
       assert str.len == strLen
+  block:
+    let str = toStr(cstring"7B")
+    assert str.toNimStr == "7B"
 
 main()

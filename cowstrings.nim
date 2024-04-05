@@ -127,6 +127,10 @@ proc toCStr*(s: String): cstring {.inline.} =
   if s.len == 0: result = cstring""
   else: result = cast[cstring](addr s.p.data)
 
+proc toNimStr*(s: String): string =
+  result = newString(s.len)
+  copyMem(cstring(result), toCStr(s), result.len)
+
 proc initStringOfCap*(space: Natural): String =
   # this is also 'system.newStringOfCap'.
   if space <= 0:
