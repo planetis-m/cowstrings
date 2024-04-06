@@ -1,4 +1,5 @@
-import std/isolation
+import std/[isolation, hashes]
+
 when defined(nimPreviewSlimSystem):
   import std/assertions
 
@@ -266,3 +267,6 @@ template toOpenArray*(s: String; first, last: int): untyped =
 
 template toOpenArray*(s: String): untyped =
   toOpenArray(toCStr(s), 0, s.high)
+
+proc hash*(x: String): Hash =
+  hash(toOpenArray(x))
