@@ -196,13 +196,15 @@ proc `==`*(a, b: String): bool =
       result = equalMem(addr a.p.data[0], addr b.p.data[0], a.len)
 
 proc cmp*(a, b: String): int =
-  let minLen = min(a.len, b.len)
-  if minLen > 0:
-    result = cmpMem(addr a.p.data[0], addr b.p.data[0], minLen)
-    if result == 0:
+  result = cmpMem(addr a.prefix[0], addr b.prefix[0], 4)
+  if result == 0:
+    let minLen = min(a.len, b.len)
+    if minLen > 0:
+      result = cmpMem(addr a.p.data[0], addr b.p.data[0], minLen)
+      if result == 0:
+        result = a.len - b.len
+    else:
       result = a.len - b.len
-  else:
-    result = a.len - b.len
 
 proc `<=`*(a, b: String): bool {.inline.} = cmp(a, b) <= 0
 proc `<`*(a, b: String): bool {.inline.} = cmp(a, b) < 0
