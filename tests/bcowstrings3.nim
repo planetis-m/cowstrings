@@ -2,7 +2,7 @@ import std/[algorithm, times, strformat, stats, random]
 include cowstrings
 
 const
-  DataLen = 100
+  DataLen = 1000
   MaxIter = 10_000
 
 type
@@ -80,19 +80,3 @@ proc test2 =
 warmup()
 test1()
 test2()
-
-# Warmup: 1.5157 s 224
-# Sort object with prefix String:
-#   Collected 10000 samples in 0.1206 seconds
-#   Average time: 0.01171 ms
-#   Stddev  time: 0.006656 ms
-#   Min     time: 0.002180 ms
-#   Max     time: 0.04381 ms
-# 2024-07-18T11:46:20+03:00
-# Sort object with std strings:
-#   Collected 10000 samples in 0.1266 seconds
-#   Average time: 0.01230 ms
-#   Stddev  time: 0.006996 ms
-#   Min     time: 0.002151 ms
-#   Max     time: 0.05527 ms
-# 2024-07-18T11:46:20+03:00

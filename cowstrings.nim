@@ -235,12 +235,6 @@ proc `[]`*(x: String; i: int): char {.inline.} =
   checkBounds(i, x.len)
   x.p.data[i]
 
-proc `[]`*(x: var String; i: int): var char {.inline.} =
-  checkBounds(i, x.len)
-  result = x.p.data[i]
-  # if i < 4:
-  #   x.prefix[i] = val??
-
 proc `[]=`*(x: var String; i: int; val: char) {.inline.} =
   checkBounds(i, x.len)
   assert x.p.counter == 0, "the string is not unique, call prepareMutation beforehand"
@@ -249,10 +243,6 @@ proc `[]=`*(x: var String; i: int; val: char) {.inline.} =
     x.prefix[i] = val
 
 proc `[]`*(x: String; i: BackwardsIndex): char {.inline.} =
-  checkBounds(x.len - i.int, x.len)
-  result = x.p.data[x.len - i.int]
-
-proc `[]`*(x: var String; i: BackwardsIndex): var char {.inline.} =
   checkBounds(x.len - i.int, x.len)
   result = x.p.data[x.len - i.int]
 
