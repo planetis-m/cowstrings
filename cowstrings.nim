@@ -5,14 +5,15 @@ when defined(nimPreviewSlimSystem):
 
 type
   StrPayloadBase = object
-    cap, counter: int
+    cap, counter: int32
 
   StrPayload = object
-    cap, counter: int
+    cap, counter: int32
     data: UncheckedArray[char]
 
   String* = object
-    len: int
+    len: int32
+    prefix: array[4, char]
     p: ptr StrPayload # can be nil if len == 0.
 
 template contentSize(cap): int = cap + 1 + sizeof(StrPayloadBase)
@@ -38,6 +39,7 @@ template dups(a, b) =
     inc b.p.counter
   a.p = b.p
   a.len = b.len
+  a.prefix = b.prefix
 
 proc `=dup`*(b: String): String =
   dups(result, b)
@@ -58,14 +60,14 @@ proc deepCopy*(y: String): String =
     p.counter = 0
     # also copy the \0 terminator:
     copyMem(addr p.data[0], addr y.p.data[0], y.len+1)
-    result = String(len: y.len, p: p)
+    result = String(len: y.len, p: p, prefix: y.prefix)
 
-proc resize(old: int): int {.inline.} =
+proc resize(old: int32): int32 {.inline.} =
   if old <= 0: result = 4
   elif old <= high(int16): result = old * 2
   else: result = old * 3 div 2 # for large arrays * 3/2 is better
 
-proc prepareAdd(s: var String; addLen: int) =
+proc prepareAdd(s: var String; addLen: int32) =
   let newLen = s.len + addLen
   # copy the data iff there is more than a reference or its a literal
   if s.p == nil or s.p.counter > 0:
@@ -95,6 +97,8 @@ proc add*(s: var String; c: char) {.inline.} =
   prepareAdd(s, 1)
   s.p.data[s.len] = c
   s.p.data[s.len+1] = '\0'
+  if s.len < 4:
+    s.prefix[s.len] = c
   inc s.len
 
 proc add*(dest: var String; src: String) {.inline.} =
@@ -102,9 +106,11 @@ proc add*(dest: var String; src: String) {.inline.} =
     prepareAdd(dest, src.len)
     # also copy the \0 terminator:
     copyMem(addr dest.p.data[dest.len], addr src.p.data[0], src.len+1)
+    if dest.len < 4:
+      copyMem(addr dest.prefix[dest.len], addr src.p.data[0], min(4 - dest.len, src.len))
     inc dest.len, src.len
 
-proc cstrToStr(str: cstring, len: int): String =
+proc cstrToStr(str: cstring, len: int32): String =
   if len <= 0:
     result = String(len: 0, p: nil)
   else:
@@ -119,10 +125,10 @@ proc cstrToStr(str: cstring, len: int): String =
 
 proc toStr*(str: cstring): String {.inline.} =
   if str == nil: cstrToStr(str, 0)
-  else: cstrToStr(str, str.len)
+  else: cstrToStr(str, str.len.int32)
 
 proc toStr*(str: string): String {.inline.} =
-  cstrToStr(str.cstring, str.len)
+  cstrToStr(str.cstring, str.len.int32)
 
 proc toCStr*(s: String): cstring {.inline.} =
   if s.len == 0: result = cstring""
@@ -141,7 +147,7 @@ proc initStringOfCap*(space: Natural): String =
       let p = cast[ptr StrPayload](allocShared0(contentSize(space)))
     else:
       let p = cast[ptr StrPayload](alloc0(contentSize(space)))
-    p.cap = space
+    p.cap = space.int32
     p.counter = 0
     result = String(len: 0, p: p)
 
@@ -153,18 +159,21 @@ proc initString*(len: Natural): String =
       let p = cast[ptr StrPayload](allocShared0(contentSize(len)))
     else:
       let p = cast[ptr StrPayload](alloc0(contentSize(len)))
-    p.cap = len
+    p.cap = len.int32
     p.counter = 0
-    result = String(len: len, p: p)
+    result = String(len: len.int32, p: p)
 
 proc setLen*(s: var String, newLen: Natural) =
   if newLen == 0:
     discard "do not free the buffer here, pattern 's.setLen 0' is common for avoiding allocations"
+    reset(s.prefix)
   else:
     if newLen > s.len or s.p == nil:
-      prepareAdd(s, newLen - s.len)
+      prepareAdd(s, newLen.int32 - s.len)
+    elif newLen < 4:
+      zeroMem(addr s.prefix[newLen], 4 - newLen)
     s.p.data[newLen] = '\0'
-  s.len = newLen
+  s.len = newLen.int32
 
 proc len*(s: String): int {.inline.} = s.len
 proc high*(s: String): int {.inline.} = s.len-1
@@ -224,25 +233,31 @@ proc `[]`*(x: String; i: int): char {.inline.} =
 
 proc `[]`*(x: var String; i: int): var char {.inline.} =
   checkBounds(i, x.len)
-  x.p.data[i]
+  result = x.p.data[i]
+  # if i < 4:
+  #   x.prefix[i] = val??
 
 proc `[]=`*(x: var String; i: int; val: char) {.inline.} =
   checkBounds(i, x.len)
   assert x.p.counter == 0, "the string is not unique, call prepareMutation beforehand"
   x.p.data[i] = val
+  if i < 4:
+    x.prefix[i] = val
 
 proc `[]`*(x: String; i: BackwardsIndex): char {.inline.} =
   checkBounds(x.len - i.int, x.len)
-  x.p.data[x.len - i.int]
+  result = x.p.data[x.len - i.int]
 
 proc `[]`*(x: var String; i: BackwardsIndex): var char {.inline.} =
   checkBounds(x.len - i.int, x.len)
-  x.p.data[x.len - i.int]
+  result = x.p.data[x.len - i.int]
 
 proc `[]=`*(x: var String; i: BackwardsIndex; val: char) {.inline.} =
   checkBounds(x.len - i.int, x.len)
   assert x.p.counter == 0, "the string is not unique, call prepareMutation beforehand"
   x.p.data[x.len - i.int] = val
+  if x.len - i.int < 4:
+    x.prefix[x.len - i.int] = val
 
 iterator items*(a: String): char {.inline.} =
   var i = 0
