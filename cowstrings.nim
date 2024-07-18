@@ -178,15 +178,13 @@ proc isolate*(value: sink String): Isolated[String] =
     result = unsafeIsolate deepCopy(value)
 
 # Comparisons
-proc eqStrings*(a, b: String): bool =
+proc `==`*(a, b: String): bool =
   result = false
   if a.len == b.len:
     if a.len == 0: result = true
     else: result = equalMem(addr a.p.data[0], addr b.p.data[0], a.len)
 
-proc `==`*(a, b: String): bool {.inline.} = eqStrings(a, b)
-
-proc cmpStrings*(a, b: String): int =
+proc cmp*(a, b: String): int =
   let minLen = min(a.len, b.len)
   if minLen > 0:
     result = cmpMem(addr a.p.data[0], addr b.p.data[0], minLen)
@@ -195,8 +193,8 @@ proc cmpStrings*(a, b: String): int =
   else:
     result = a.len - b.len
 
-proc `<=`*(a, b: String): bool {.inline.} = cmpStrings(a, b) <= 0
-proc `<`*(a, b: String): bool {.inline.} = cmpStrings(a, b) < 0
+proc `<=`*(a, b: String): bool {.inline.} = cmp(a, b) <= 0
+proc `<`*(a, b: String): bool {.inline.} = cmp(a, b) < 0
 
 proc prepareMutation*(s: var String) {.inline.} =
   if s.p != nil and s.p.counter > 0:
