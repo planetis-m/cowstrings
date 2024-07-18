@@ -129,7 +129,7 @@ proc toCStr*(s: String): cstring {.inline.} =
   else: result = cast[cstring](addr s.p.data)
 
 proc toNimStr*(s: String): string =
-  result = newString(s.len)
+  result = newStringUninit(s.len)
   copyMem(cstring(result), toCStr(s), result.len)
 
 proc initStringOfCap*(space: Natural): String =
