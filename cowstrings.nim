@@ -122,6 +122,7 @@ proc cstrToStr(str: cstring, len: int32): String =
     p.counter = 0
     copyMem(addr p.data[0], str, len+1)
     result = String(len: len, p: p)
+    copyMem(addr result.prefix, addr result.p.data[0], min(4, len))
 
 proc toStr*(str: cstring): String {.inline.} =
   if str == nil: cstrToStr(str, 0)
@@ -191,7 +192,8 @@ proc `==`*(a, b: String): bool =
   result = false
   if a.len == b.len:
     if a.len == 0: result = true
-    else: result = equalMem(addr a.p.data[0], addr b.p.data[0], a.len)
+    elif a.prefix == b.prefix:
+      result = equalMem(addr a.p.data[0], addr b.p.data[0], a.len)
 
 proc cmp*(a, b: String): int =
   let minLen = min(a.len, b.len)
