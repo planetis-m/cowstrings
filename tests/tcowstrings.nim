@@ -14,7 +14,7 @@ proc main =
     var a: String = toStr""
     a.add 'h'
     a.add 'e'
-    assert a == cstring"he".toStr
+    assert a == "he".toStr
   block:
     var b: String = toStr""
     b.add 'w'
@@ -22,13 +22,13 @@ proc main =
     var a = isolate b
     #b.add 'r'
     let c = extract a
-    assert c == cstring"wo".toStr
+    assert c == "wo".toStr
   block:
-    let a = cstring"World".toStr
+    let a = "World".toStr
     var b = a
     prepareMutation(b)
     b[0] = 'P'
-    assert a == cstring"World".toStr
+    assert a == "World".toStr
   block:
     let data = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     var str = String()
@@ -53,7 +53,7 @@ proc main =
       assert str.toCStr == expected.cstring
       assert str.len == strLen
   block:
-    let str = toStr(cstring"7B")
+    let str = toStr"7B"
     assert str.toNimStr == "7B"
     assert str.toOpenArray() == "7B"
     assert str.toOpenArray(0, 1) == "7B"
