@@ -63,7 +63,7 @@ proc deepCopy*(y: String): String =
 proc resize(old: int): int {.inline.} =
   if old <= 0: result = 4
   elif old <= high(int16): result = old * 2
-  else: result = old * 3 div 2 # for large arrays * 3/2 is better
+  else: result = old div 2 + old # for large arrays * 3/2 is better
 
 proc prepareAdd(s: var String; addLen: int) =
   let newLen = s.len + addLen
